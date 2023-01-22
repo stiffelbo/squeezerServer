@@ -22,8 +22,8 @@ exports.getKlines = async (req, res) => {
     const interval = req.query.interval ?? null;;
     const limit = req.query.limit ?? null;
     if(symbol){
-      //res.json({message: [symbol, interval, limit]});
-      res.json(await getter.getKlines(symbol, interval, limit));
+      const data = await getter.getKlines(symbol, interval, limit);
+      res.json(data);
     }    
   } catch (err) {
     res.status(500).json({ message : err.message });
