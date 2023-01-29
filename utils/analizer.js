@@ -1,4 +1,6 @@
 const checkCandle = require('./candlesAnalizer');
+const tradeRunner = require('./tradeRunner');
+const signals = require('./signals');
 
 const defaultSettings = {
     ma: [31, 81, 200],
@@ -6,7 +8,7 @@ const defaultSettings = {
     doncTenk : [31, 81, 200],
     low: [31, 81, 200],
     high: [31, 81, 200],
-    atr: [31, 81, 200],
+    atr: [7],
     ph: [26],
     pl: [26]
 }
@@ -18,6 +20,7 @@ class Analizer{
         const comp = this;
         comp.data = data;
         comp.pivots = [];
+        comp.trades = [];
         comp.settings = settings;
         comp.initActions();
         comp.emit();
@@ -28,6 +31,7 @@ class Analizer{
         comp.data = comp.data.map(item => {
             const elem = {
                 openTime : item[0],
+                closeTime : item[6],
                 o : item[1],
                 h : item[2],
                 l : item[3],
@@ -182,8 +186,29 @@ class Analizer{
         return {prices, pivots};
     }
 
-    findEvents(prices){
-        //
+    getTrades(prices, len, settings){
+        const trades = [];
+        if (!prices || prices.length < len) {
+            return [];
+        }
+        for (let index = 0; index < prices.length; index++) {
+            if(index > len){
+                //search for trades add to array
+                const trade = signals(prices[index], settings);
+                if(trade){
+                    trades.push(trade);
+                }
+            }        
+        }
+        return trades;
+    }
+
+    runTrades(prices, trades, balance){
+        if(trades.length){
+            trades.map(trade => {
+                tradeRunner({trade, prices, balance});
+            })            
+        }
     }
 
     initActions(){
@@ -193,10 +218,11 @@ class Analizer{
         this.settings.ma.map(len => {
             comp.data = this.ma(comp.data, len, 'c');
         });
+        /*
         this.settings.volMa.map(len => {
             comp.data = this.ma(comp.data, len, 'qVol', 'volSma');
         });
-        /*
+        
         this.settings.low.map(len => {
             comp.data = this.low(comp.data, len, 'l', 'min');
         });
@@ -204,12 +230,15 @@ class Analizer{
             comp.data = this.high(comp.data, len, 'h', 'max');
         });
         */
+       /*
         this.settings.doncTenk.map(len => {
             comp.data = this.doncTenk(comp.data, len);
         });
+        */
         this.settings.atr.map(len => {
             comp.data = this.atr(comp.data, len);
         });
+        /*
         this.settings.ph.map(len => {
             const result = this.ph(comp.data, len);
             comp.data = result.prices;
@@ -220,10 +249,15 @@ class Analizer{
             comp.data = result.prices;
             comp.pivots = [...comp.pivots, ...result.pivots];
         });
+        */
+
+        comp.trades = [...comp.trades, ...this.getTrades(comp.data, this.settings.ma[2], this.settings)]; 
+
+        this.runTrades(comp.data, comp.trades);
     }
 
     emit(){
-        return this.pivots;
+        return this.trades;
     }
 }
 

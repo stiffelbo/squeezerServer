@@ -11,7 +11,7 @@ module.exports = {
             return (item.symbol.toLowerCase().includes('usdt') && parseFloat(item.lastPrice) > 0);   
         });
     },
-    getKlines : async (symbol, interval = '1h', limit = 500) => {
+    getKlines : async (symbol, interval = '4h', limit = 1000) => {
         const {data} = await http.get(`https://api.binance.com/api/v3/klines?symbol=${symbol}&interval=${interval}&limit=${limit}`);
         return data;
     }

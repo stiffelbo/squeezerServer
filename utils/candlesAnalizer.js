@@ -55,6 +55,14 @@ const marubozu = ({body, size}) => {
     }
 }
 
+const mediumBody = ({body, size}) => {
+    if(body > size * 0.6){
+        return true;
+    }else{
+        return false;
+    }
+}
+
 
 
 const checkCandle = (candle) => {
@@ -68,26 +76,28 @@ const checkCandle = (candle) => {
     const upWick = isRising ? +h - +c : +h - +o;
     const lowWick = isRising ? +o - +l : +c - +l; 
 
+    let result = null;
+
+    if(mediumBody({body, size})){
+        result =  "MediumBody";
+    }
     if(marubozu({body, size})){
-        console.log("Marubozu");
-        return "Marubozu";
+        result = "Marubozu";
     }
     if(gravestoneDoji({body, upWick, lowWick, size})){
-        console.log("Gravestone Doji");
-        return "Gravestone Doji";
+        result = "Gravestone Doji";
     }
     if(shootingStar({body, upWick, lowWick, size})){
-        console.log("Shooting Star");
-        return "Shooting Star";
+        result = "Shooting Star";
     }
     if(dragonFlyDoji({body, upWick, lowWick, size})){
-        console.log("Dragonfly Doji");
-        return "Dragonfly Doji";
+        result = "Dragonfly Doji";
     }
     if(hammer({body, upWick, lowWick, size})){
-        console.log("Hammer");
-        return "Hammer";
+        result = "Hammer";
     }
+
+    return result;
 }
 
 
